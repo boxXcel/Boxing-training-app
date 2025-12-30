@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>boxXcel</title>
+
+  <style>
+    body{
+      margin:0;
+      background:#ffffff;
+      font-family: Arial, sans-serif;
+      text-align:center;
+    }
+
+    .page{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:flex-start;
+      padding: 18px 16px;
+    }
+
+    .logo{
+      width:1800px;      /* same logo size as you had */
+      max-width:95%;
+      height:auto;
+      display:block;
+      margin-top: 10px;
+      margin-bottom: 18px; /* tight gap under logo */
+    }
+
+    /* Disclaimer (grey, readable, no scrolling) */
+    .disclaimer{
+      width: 96%;
+      max-width: 1600px;      /* wide on desktop */
+      color: #666;            /* grey */
+      font-size: 22px;        /* readable without forcing scroll */
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    .disclaimer strong{
+      display:block;
+      color:#555;
+      font-size: 24px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    /* Mobile: keep it readable and still fit */
+    @media (max-width: 600px){
+      .disclaimer{ font-size: 16px; }
+      .disclaimer strong{ font-size: 18px; }
+      .logo{ margin-bottom: 14px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+
+    <img class="logo" src="logo.png" alt="boxXcel Logo" />
+
+    <div class="disclaimer">
+      <strong>Training and Information Only</strong>
+      boxXcel is a training support application for boxing and fitness purposes only.
+      It does not provide medical, health, nutritional, or professional advice.
+      Always consult a qualified professional before beginning or modifying any training programme.
+    </div>
+
+  </div>
+</body>
+</html>
