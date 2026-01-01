@@ -97,7 +97,7 @@
 <body>
   <div class="page">
 
-    <!-- IMPORTANT: absolute path prevents /auth/callback/... lookups -->
+    <!-- Absolute path prevents /auth/callback/... lookups -->
     <img class="logo" src="/logo.png" alt="boxXcel Logo" />
 
     <div class="disclaimer">
@@ -127,6 +127,9 @@
     const LOGOUT_URI = CANONICAL_ORIGIN + "/";
 
     const SCOPES = "openid email profile";
+
+    // Auto logout after inactivity (25 seconds)
+    const IDLE_TIMEOUT_MS = 25 * 1000;
 
     // ====== HELPERS ======
     function base64url(uint8) {
@@ -163,6 +166,35 @@
       return true;
     }
 
+    // ====== IDLE LOGOUT (25s) ======
+    let idleTimer = null;
+
+    function resetIdleTimer() {
+      // Only track idle time when logged in
+      if (!hasValidAccessToken()) return;
+
+      if (idleTimer) clearTimeout(idleTimer);
+
+      idleTimer = setTimeout(() => {
+        console.warn("Idle timeout reached. Logging out.");
+        logout();
+      }, IDLE_TIMEOUT_MS);
+    }
+
+    function startIdleTracking() {
+      const events = ["mousemove", "mousedown", "keydown", "touchstart", "scroll"];
+      events.forEach(evt =>
+        window.addEventListener(evt, resetIdleTimer, { passive: true })
+      );
+      resetIdleTimer();
+    }
+
+    function stopIdleTracking() {
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = null;
+    }
+
+    // ====== UI ======
     function syncUi() {
       const authed = hasValidAccessToken();
       document.getElementById("loginBtn").style.display = authed ? "none" : "inline-block";
@@ -177,9 +209,12 @@
             email = p.email ? ` (${p.email})` : "";
           }
         } catch {}
+
         setStatus(`<span class="ok">Logged in</span>${email}`);
+        startIdleTracking();
       } else {
         setStatus(`<span class="bad">Not logged in</span>`);
+        stopIdleTracking();
       }
     }
 
@@ -205,6 +240,8 @@
     }
 
     function logout() {
+      stopIdleTracking(); // stop timer immediately
+
       // Clear local tokens
       localStorage.removeItem("access_token");
       localStorage.removeItem("id_token");
@@ -244,7 +281,7 @@
 
     // ====== BOOT ======
     (function boot() {
-      // If user lands on non-www, push them to canonical www to prevent host mismatch
+      // Force canonical www to prevent host mismatch
       if (location.origin === "https://boxxcel.com") {
         location.replace(CANONICAL_ORIGIN + location.pathname + location.search + location.hash);
         return;
