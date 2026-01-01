@@ -49,11 +49,41 @@
       font-weight: 700;
     }
 
+    /* NEW: simple button styling (minimal, neutral) */
+    .actions{
+      margin-top: 22px;
+      display:flex;
+      gap: 12px;
+      align-items:center;
+      justify-content:center;
+      flex-wrap: wrap;
+    }
+
+    .btn{
+      appearance:none;
+      border:1px solid #0b5fff;
+      background:#0b5fff;
+      color:#fff;
+      font-size:18px;
+      font-weight:700;
+      padding:12px 18px;
+      border-radius:10px;
+      cursor:pointer;
+    }
+
+    .btn:active{ transform: translateY(1px); }
+
+    .btn-secondary{
+      background:#fff;
+      color:#0b5fff;
+    }
+
     /* Mobile: keep it readable and still fit */
     @media (max-width: 600px){
       .disclaimer{ font-size: 16px; }
       .disclaimer strong{ font-size: 18px; }
       .logo{ margin-bottom: 14px; }
+      .btn{ font-size:16px; padding:11px 16px; }
     }
   </style>
 </head>
@@ -70,6 +100,61 @@
       Always consult a qualified professional before beginning or modifying any training programme.
     </div>
 
+    <!-- NEW: Login / Logout actions -->
+    <div class="actions">
+      <button class="btn" onclick="login()">Login</button>
+      <button class="btn btn-secondary" onclick="logout()">Logout</button>
+    </div>
+
   </div>
+
+  <script>
+    const COGNITO_DOMAIN = "https://eu-west-2744agx2nc.auth.eu-west-2.amazoncognito.com";
+    const CLIENT_ID = "1hhh6m6lhs126argcqac9h93rc";
+    const REDIRECT_URI = "https://boxxcel.com/auth/callback.html";
+    const SCOPES = "openid email profile";
+
+    function base64url(uint8) {
+      return btoa(String.fromCharCode(...uint8))
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/g, "");
+    }
+
+    async function login() {
+      // PKCE verifier stored only for this browser session
+      const verifier = crypto.randomUUID() + crypto.randomUUID();
+      sessionStorage.setItem("pkce_verifier", verifier);
+
+      const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier));
+      const challenge = base64url(new Uint8Array(hash));
+
+      const url =
+        COGNITO_DOMAIN + "/oauth2/authorize" +
+        "?response_type=code" +
+        "&client_id=" + encodeURIComponent(CLIENT_ID) +
+        "&redirect_uri=" + encodeURIComponent(REDIRECT_URI) +
+        "&scope=" + encodeURIComponent(SCOPES) +
+        "&code_challenge=" + encodeURIComponent(challenge) +
+        "&code_challenge_method=S256";
+
+      window.location.href = url;
+    }
+
+    function logout() {
+      // Clear local tokens
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("id_token");
+      localStorage.removeItem("refresh_token");
+
+      // End Cognito session too
+      const url =
+        COGNITO_DOMAIN + "/logout" +
+        "?client_id=" + encodeURIComponent(CLIENT_ID) +
+        "&logout_uri=" + encodeURIComponent("https://boxxcel.com/");
+
+      window.location.href = url;
+    }
+  </script>
 </body>
 </html>
