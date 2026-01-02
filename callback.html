@@ -1,71 +1,13 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Signing in…</title>
 </head>
 <body>
 <script>
-(async () => {
-  const params = new URLSearchParams(window.location.search);
-
-  // If Cognito returns an OAuth error
-  const oauthErr = params.get("error");
-  const oauthErrDesc = params.get("error_description");
-  if (oauthErr) {
-    document.body.innerText = `Authentication failed: ${oauthErr}${oauthErrDesc ? " — " + oauthErrDesc : ""}`;
-    return;
-  }
-
-  const code = params.get("code");
-  if (!code) {
-    document.body.innerText = "Authentication failed (no code).";
-    return;
-  }
-
-  const verifier = sessionStorage.getItem("pkce_verifier");
-  if (!verifier) {
-    document.body.innerText = "Authentication failed (missing PKCE verifier).";
-    return;
-  }
-
-  const body = new URLSearchParams({
-    grant_type: "authorization_code",
-    client_id: "1hhh6m6lhs126argcqac9h93rc",
-    code,
-    redirect_uri: "https://www.boxxcel.com/auth/callback.html",
-    code_verifier: verifier
-  });
-F
-  let tokens;
-  try {
-    const resp = await fetch("https://eu-west-2744agx2nc.auth.eu-west-2.amazoncognito.com/oauth2/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body
-    });
-
-    tokens = await resp.json();
-
-    if (!resp.ok || !tokens.access_token) {
-      document.body.innerText = "Token exchange failed: " + JSON.stringify(tokens);
-      return;
-    }
-  } catch (e) {
-    document.body.innerText = "Token exchange failed (network error).";
-    return;
-  }
-
-  localStorage.setItem("access_token", tokens.access_token);
-  if (tokens.id_token) localStorage.setItem("id_token", tokens.id_token);
-  if (tokens.refresh_token) localStorage.setItem("refresh_token", tokens.refresh_token);
-
-  sessionStorage.removeItem("pkce_verifier");
-
-  // Redirect into your app
-  window.location.replace("/");
-})();
+  window.location.replace("/auth/callback.html" + window.location.search);
 </script>
 </body>
 </html>
